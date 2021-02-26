@@ -95,16 +95,13 @@ class CursesWindow(Window):
     def __enter__(self):
         self.logfile = open("log", "a+")
         self.stdscr = curses.initscr()
-        self.set_pixels(
-            np.empty(
-                shape=(curses.COLS, curses.LINES), dtype=str  # pylint: disable=no-member
-            )
-        )
+        shape = (curses.COLS, curses.LINES)  # pylint: disable=no-member
+        self.set_pixels(np.empty(shape=shape, dtype=str))
         self.clear()
         self.stdscr.keypad(True)
 
         curses.curs_set(False)
-        # curses.noecho()
+        curses.noecho()
         curses.cbreak()
         # curses.set_escdelay(0), need 3.9
         return self

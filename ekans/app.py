@@ -5,15 +5,24 @@ from .board import Board
 
 
 class Application:
-    def __init__(self, window, refresh_rate=30, tick_rate=5):
+    def __init__(self, window, refresh_rate=30, tick_rate=5, max_shape=None):
         self._stop = False
         self._tick_rate = tick_rate
         self._refresh_rate = refresh_rate
         self._handlers = {}
 
+        shape = window.shape
+        if max_shape:
+            shape = (
+                min(max_shape[0], shape[0]),
+                min(max_shape[1], shape[1]),
+            )
         self.window = window  # total screen
         self.window.install_handlers(self)
-        self.board = Board(self, self.window[:, :-1])
+
+        if max_shape:
+            max_shape=(100, 100)
+        self.board = Board(self, self.window[0:shape[0], 0:shape[1]-1])
         self.board.install_handlers(self)
 
     def add_handler(self, event, handler):

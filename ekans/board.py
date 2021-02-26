@@ -58,6 +58,7 @@ class Board(Drawable):
 
     def tick(self):
         self.snake.tick()
+        self.add_apples()
 
     def game_over(self):
         self.app.stop(None)

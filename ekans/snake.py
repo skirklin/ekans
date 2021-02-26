@@ -43,11 +43,9 @@ class Snake(Drawable):
     def set_direction(self, key):
         direction = KEY_MAP[key]
         back = self.head.back_dir()
-        fwd = self.head.fwd_dir()
-        if direction == fwd:
-            self.tick()
-        elif direction != back:
+        if direction != back:
             self.direction = direction
+        self.board.tick()
 
     def install_handlers(self, app):
         for key in KEY_MAP:

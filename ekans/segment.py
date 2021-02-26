@@ -41,8 +41,7 @@ class Segment(Drawable):
         self.x, self.y = value
 
     def fwd_dir(self):
-        print(self.fwd)
-        if self.fwd is None:
+        if self.fwd is self.snake.root:
             return self.snake.direction
         return get_dir(
             self.fwd.x - self.x,
@@ -50,7 +49,7 @@ class Segment(Drawable):
         )
 
     def back_dir(self):
-        if self.back is None:
+        if self.back is self.snake.root:
             return UNCH
         return get_dir(
             self.back.x - self.x,
