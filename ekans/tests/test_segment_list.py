@@ -1,31 +1,33 @@
 from ..snake import Snake
+from ..window import VirtualWindow
 from ..segment import Segment
 
 def test_segment_list():
-    l = Snake(None)
+    w = VirtualWindow((20, 20), [])
+    l = Snake(None, w)
     assert list(l) == []
 
-    s = Segment(0, 0)
+    s = l.new_segment(0, 0)
     l.append(s)
 
     assert list(l) == [s]
 
     assert l[0] == s
 
-    s2 = Segment(0, 1)
+    s2 = l.new_segment(0, 1)
     l.append(s2)
 
     assert list(l) == [s, s2]
     assert l[1] == s2
 
-    s3 = Segment(1, 0)
+    s3 = l.new_segment(1, 0)
 
     l.insert(0, s3)
 
     assert list(l) == [s3, s, s2]
     assert l[0] == s3
 
-    s4 = Segment(2, 0)
+    s4 = l.new_segment(2, 0)
 
     l.insert(1, s4)
     assert list(l) == [s3, s4, s, s2]

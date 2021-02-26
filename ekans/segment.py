@@ -21,7 +21,8 @@ for (p, n), v in list(SEGMENT_CHARS.items()):
 
 
 class Segment(Drawable):
-    def __init__(self, x, y):
+    def __init__(self, board, x, y):
+        self.board = board
         self.x = x
         self.y = y
 
@@ -40,19 +41,20 @@ class Segment(Drawable):
         self.x, self.y = value
 
     def fwd_dir(self):
-        if self.back is None:
-            return self.snake.direction
-        return get_dir(
-            self.back.x - self.x,
-            self.back.y - self.y,
-        )
-
-    def back_dir(self):
+        print(self.fwd)
         if self.fwd is None:
-            return UNCH
+            return self.snake.direction
         return get_dir(
             self.fwd.x - self.x,
             self.fwd.y - self.y,
+        )
+
+    def back_dir(self):
+        if self.back is None:
+            return UNCH
+        return get_dir(
+            self.back.x - self.x,
+            self.back.y - self.y,
         )
 
     def check(self):
@@ -61,12 +63,16 @@ class Segment(Drawable):
         assert self.fwd_dir() in ALL
         assert self.back_dir() in ALL
 
-    def draw(self, window):
+    @property
+    def window(self):
+        return self.board.window
+
+    def draw(self):
         try:
             char = self.get_char()
         except KeyError:
             char = "?"
-        window.insstr(self.x, self.y, char)
+        self.window.insstr(self.x, self.y, char, self)
 
     def get_char(self):
         if self.fwd is self.snake.root:

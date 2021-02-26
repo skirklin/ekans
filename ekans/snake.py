@@ -1,49 +1,86 @@
-import asyncio
 import random
 
 from .drawable import Drawable
 from .segment import Segment
+from .barrier import Barrier
+from .apple import Apple
 from .directions import LEFT, RIGHT, UP, DOWN
 
+KEY_MAP = {
+    "KEY_LEFT": LEFT,
+    "KEY_UP": UP,
+    "KEY_RIGHT": RIGHT,
+    "KEY_DOWN": DOWN,
+}
 
 class Snake(Drawable):
-    def __init__(self, direction):
+    def __init__(self, direction, board):
         self.direction = direction
+        self.board = board
 
-        self.root = Segment(None, None)
+        self.root = Segment(None, None, None)
         self.root.back = self.root
         self.root.fwd = self.root
         self.length = 0
-        
+    
+    @property
+    def window(self):
+        return self.board.window
+
     def move(self):
         # move tail to in front of head
         tail = self.tail
-        head = self.head
         self._remove(self.tail)
-        tail.x = head.x + self.direction.dx
-        tail.y = head.y + self.direction.dy
+        tail.x, tail.y = self.peek()
         self.insert(0, tail)
 
-    async def run(self):
-        while True:
-            self.move()
-            await asyncio.sleep(1)
+    def peek(self):
+        head = self.head
+        x = head.x + self.direction.dx
+        y = head.y + self.direction.dy
+        return (x, y)
 
+    def set_direction(self, key):
+        direction = KEY_MAP[key]
+        back = self.head.back_dir()
+        fwd = self.head.fwd_dir()
+        if direction == fwd:
+            self.tick()
+        elif direction != back:
+            self.direction = direction
+
+    def install_handlers(self, app):
+        for key in KEY_MAP:
+            app.add_handler(key, self.set_direction)
+
+    def tick(self):
+        peek = self.peek()
+        hit = self.window.get_obj(*peek)
+        if isinstance(hit, Apple):
+            self.board.apples.remove(hit)
+            self.grow_forward()
+        elif isinstance(hit, Barrier):
+            self.board.game_over()
+        else:
+            self.move()
 
     @classmethod
-    def Make(cls, x, y, window, size=8):
-        s = cls(UP)
-        s.append(Segment(x, y))
+    def Make(cls, board, x, y, size=8):
+        s = cls(UP, board)
+        s.append(s.new_segment(x, y))
         for _ in range(size - 1):
-            s.append_segment([DOWN, RIGHT], window)
+            s.grow_backward([DOWN, RIGHT])
         return s
+
+    def new_segment(self, x, y):
+        return Segment(self.board, x, y)
 
     def get_char(self):
         return "$"
 
-    def draw(self, window):
+    def draw(self):
         for segment in self:
-            segment.draw(window)
+            segment.draw()
 
     @property
     def head(self):
@@ -53,24 +90,24 @@ class Snake(Drawable):
     def tail(self):
         return self[-1]
 
-    def prepend(self):
+    def grow_forward(self):
         head = self.head
-        new_seg = Segment(
+        new_seg = self.new_segment(
             head.x + self.direction.dx,
             head.y + self.direction.dy,
         )
         self.insert(0, new_seg)
 
 
-    def append_segment(self, directions, window):
+    def grow_backward(self, directions):
         tail = self.tail
 
         for direction in directions:
-            new_seg = Segment(
+            new_seg = self.new_segment(
                 tail.x + direction.dx,
                 tail.y + direction.dy,
             )
-            if new_seg.coord in window:
+            if new_seg.coord in self.window:
                 break
         else:
             raise Exception("Unable to append segment, ran into window borders")

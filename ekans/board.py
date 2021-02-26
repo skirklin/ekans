@@ -1,15 +1,9 @@
-import asyncio
 import random
 import time
 from .drawable import Drawable
 from .snake import Snake
 from .apple import Apple
-
-"""
-TODO: 
-  put screen state into an array here, and move all rendering and curses integration here
-
-"""
+from .barrier import Barrier
 
 
 class Board(Drawable):
@@ -17,32 +11,53 @@ class Board(Drawable):
     Represent the state of the game board.
     """
 
-    def __init__(self, window):
+    def __init__(self, app, window):
+        self.app = app
         self.window = window
 
-        
-
         self.apples = set()
-        while len(self.apples) < 10:
-            self.add_apple()
+        self.add_apples()
+
+        self.barriers = set()
+        self.add_border()
 
         x_dim,y_dim = self.window.shape
-        self.snake = Snake.Make(x=x_dim // 2, y=y_dim // 2, window=self.window)
+        self.snake = Snake.Make(x=x_dim // 2, y=y_dim // 2, board=self)
+        
+    def add_apples(self):
+        while len(self.apples) < 10:
+            self.add_apple()
 
     def add_apple(self):
         rand_x = random.choice(range(self.window.shape[0]))
         rand_y = random.choice(range(self.window.shape[1]))
-        char = self.window.instr(rand_x, rand_y)
-        if char == " ":
-            self.apples.add(Apple(rand_x, rand_y))
+        elt = self.window.get_obj(rand_x, rand_y)
+        if elt is None:
+            self.apples.add(Apple(self, rand_x, rand_y))
 
-    def draw(self, window):
+
+    def add_border(self):
         for x in range(self.window.shape[0]):
-            for y in range(self.window.shape[1]):
-                window.insstr(x, y, " ")
-        for apple in self.apples:
-            apple.draw(window)
-        self.snake.draw(window)
+            self.barriers.add(Barrier(self, x,  0))
+            self.barriers.add(Barrier(self, x, -1))
+        for y in range(self.window.shape[1] - 1):
+            self.barriers.add(Barrier(self,  0, y))
+            self.barriers.add(Barrier(self, -1, y))
 
-    async def run(self):
-        asyncio.create_task(self.snake.run())
+
+    def draw(self):
+        self.window.clear()
+        for apple in self.apples:
+            apple.draw()
+        for barrier in self.barriers:
+            barrier.draw()
+        self.snake.draw()
+
+    def install_handlers(self, app):
+        self.snake.install_handlers(app)
+
+    def tick(self):
+        self.snake.tick()
+
+    def game_over(self):
+        self.app.stop(None)

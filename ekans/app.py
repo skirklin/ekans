@@ -1,38 +1,61 @@
 import time
-import asyncio
 import threading
-
 
 from .board import Board
 
 
 class Application:
-    def __init__(self, window, refresh_rate=30):
-        self.stop = False
-        self.refresh_rate = refresh_rate
-        self.window = window
+    def __init__(self, window, refresh_rate=30, tick_rate=5):
+        self._stop = False
+        self._tick_rate = tick_rate
+        self._refresh_rate = refresh_rate
+        self._handlers = {}
 
-    def start(self):
-        self.board = Board(self.window)
-        asyncio.run(self.run())
+        self.window = window  # total screen
+        self.window.install_handlers(self)
+        self.board = Board(self, self.window[:, :-1])
+        self.board.install_handlers(self)
 
-    async def run(self):
+    def add_handler(self, event, handler):
+        self._handlers.setdefault(event, []).append(handler)
 
-        t = threading.Thread(target=self.listen)
-        t.daemon = True
-        t.start()
+    def stop(self, _):
+        self._stop = True
 
-        asyncio.create_task(self.board.run())
-        while True:
-            self.board.draw(self.window)
-            self.window.render()
-            self.window.logfile.write("updated\n")
-            await asyncio.sleep(1 / self.refresh_rate)
+    def start_listener_thread(self):
+        self.listener_thread = threading.Thread(target=self.listen)
+        self.listener_thread.daemon = True
+        self.listener_thread.start()
+
+    def start_render_thread(self):
+        self.render_thread = threading.Thread(target=self.render)
+        self.render_thread.daemon = True
+        self.render_thread.start()
+
+    def run(self):
+        self.start_listener_thread()
+        self.start_render_thread()
+
+        while not self._stop:
+            try:
+                self.board.tick()
+                time.sleep(1/self._tick_rate)
+            except KeyboardInterrupt:
+                self.stop(None)
+
+    def handle(self, event):
+        for handler in self._handlers.get(event, []):
+            handler(event)
 
     def listen(self):
         for event in self.window.events():
-            print(event)
+            self.handle(event)
 
-    def draw(self, window):
-        self.board.draw(window)
-        window.refresh()
+    def render(self):
+        while True:
+            self.draw()
+            self.window.render()
+            time.sleep(1//self._refresh_rate)
+
+    def draw(self):
+        self.board.draw()

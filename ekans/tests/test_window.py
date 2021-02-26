@@ -3,7 +3,7 @@ from ..window import VirtualWindow, CursesWindow
 
 def test_curses_window():
     with CursesWindow() as window:
-        window.insstr(5, 5, "$")
+        window.insstr(5, 5, "$", None)
         window.render()
 
 def test_window_functionality():
