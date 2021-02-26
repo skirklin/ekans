@@ -1,4 +1,6 @@
 from .app import Application
+from .window import CursesWindow
 
-with Application() as app:
+with CursesWindow() as window:
+    app = Application(window)
     app.start()

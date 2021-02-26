@@ -5,5 +5,5 @@ class Apple(Drawable):
         self.x = x
         self.y = y
 
-    def draw(self, scr):
-        scr.insstr(self.y, self.x, "#")
+    def draw(self, window):
+        window.insstr(self.x, self.y, "#")

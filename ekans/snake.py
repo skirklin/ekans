@@ -27,23 +27,23 @@ class Snake(Drawable):
     async def run(self):
         while True:
             self.move()
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(1)
 
 
     @classmethod
-    def Make(cls, x, y, size=8):
+    def Make(cls, x, y, window, size=8):
         s = cls(UP)
         s.append(Segment(x, y))
         for _ in range(size - 1):
-            s.append_segment(DOWN)
+            s.append_segment([DOWN, RIGHT], window)
         return s
 
     def get_char(self):
         return "$"
 
-    def draw(self, scr):
+    def draw(self, window):
         for segment in self:
-            segment.draw(scr)
+            segment.draw(window)
 
     @property
     def head(self):
@@ -62,13 +62,18 @@ class Snake(Drawable):
         self.insert(0, new_seg)
 
 
-    def append_segment(self, direction):
+    def append_segment(self, directions, window):
         tail = self.tail
-        
-        new_seg = Segment(
-            tail.x + direction.dx,
-            tail.y + direction.dy,
-        )
+
+        for direction in directions:
+            new_seg = Segment(
+                tail.x + direction.dx,
+                tail.y + direction.dy,
+            )
+            if new_seg.coord in window:
+                break
+        else:
+            raise Exception("Unable to append segment, ran into window borders")
         self.append(new_seg)
 
     def __iter__(self):

@@ -31,6 +31,14 @@ class Segment(Drawable):
         self.back = None
         self.snake = None
 
+    @property
+    def coord(self):
+        return (self.x, self.y)
+
+    @coord.setter
+    def coord(self, value):
+        self.x, self.y = value
+
     def fwd_dir(self):
         if self.back is None:
             return self.snake.direction
@@ -53,12 +61,12 @@ class Segment(Drawable):
         assert self.fwd_dir() in ALL
         assert self.back_dir() in ALL
 
-    def draw(self, scr):
+    def draw(self, window):
         try:
             char = self.get_char()
         except KeyError:
             char = "?"
-        scr.addstr(self.y, self.x, char)
+        window.insstr(self.x, self.y, char)
 
     def get_char(self):
         if self.fwd is self.snake.root:

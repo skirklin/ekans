@@ -2,5 +2,5 @@ import abc
 
 class Drawable(abc.ABC):
     @abc.abstractmethod
-    def draw(self, scr):
+    def draw(self, window):
         pass

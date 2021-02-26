@@ -1,50 +1,38 @@
-import curses
 import time
 import asyncio
+import threading
+
 
 from .board import Board
 
 
 class Application:
-    def __init__(self, refresh_rate=30):
-        self.stdscr = None
+    def __init__(self, window, refresh_rate=30):
         self.stop = False
         self.refresh_rate = refresh_rate
+        self.window = window
 
     def start(self):
-        if self.stdscr is None:
-            raise RuntimeError("Must run application within application context")
-        self.board = Board(
-            self, dims=(curses.COLS, curses.LINES)  # pylint: disable=no-member
-        )
+        self.board = Board(self.window)
         asyncio.run(self.run())
 
     async def run(self):
+
+        t = threading.Thread(target=self.listen)
+        t.daemon = True
+        t.start()
+
         asyncio.create_task(self.board.run())
-        ticks = 60
-        while ticks:
-            self.draw(self.stdscr)
+        while True:
+            self.board.draw(self.window)
+            self.window.render()
+            self.window.logfile.write("updated\n")
             await asyncio.sleep(1 / self.refresh_rate)
-            ticks -= 1
 
-    def draw(self, scr):
-        curses.echo()
-        self.board.draw(scr)
-        scr.refresh()
+    def listen(self):
+        for event in self.window.events():
+            print(event)
 
-    def __enter__(self):
-        self.logfile = open("log", 'a+')
-        self.stdscr = curses.initscr()
-        self.stdscr.keypad(True)
-
-        curses.curs_set(False)
-        curses.noecho()
-        curses.cbreak()
-        return self
-
-    def __exit__(self, *execDetails):
-        curses.nocbreak()
-        self.stdscr.keypad(False)
-        curses.echo()
-        curses.endwin()
-        self.logfile.close()
+    def draw(self, window):
+        self.board.draw(window)
+        window.refresh()
