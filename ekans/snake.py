@@ -57,7 +57,7 @@ class Snake(Drawable):
         if isinstance(hit, Apple):
             self.board.apples.remove(hit)
             self.grow_forward()
-        elif isinstance(hit, Barrier):
+        elif isinstance(hit, (Barrier, Segment)):
             self.board.game_over()
         else:
             self.move()
@@ -119,6 +119,9 @@ class Snake(Drawable):
 
     def __getitem__(self, idx):
         return list(self)[idx]
+
+    def __len__(self):
+        return self.length
 
     def append(self, seg):
         assert isinstance(seg, Segment), seg

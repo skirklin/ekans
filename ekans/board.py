@@ -1,4 +1,5 @@
 import random
+import numpy as np
 import time
 from .drawable import Drawable
 from .snake import Snake
@@ -11,29 +12,33 @@ class Board(Drawable):
     Represent the state of the game board.
     """
 
-    def __init__(self, app, window):
+    def __init__(self, app, window, num_apples=0.01):
         self.app = app
         self.window = window
+        x_dim,y_dim = self.window.shape
+        self.snake = Snake.Make(x=x_dim // 2, y=y_dim // 2, board=self)
 
+        if num_apples < 1:
+            num_apples = x_dim*y_dim*num_apples
+        self.num_apples = num_apples
         self.apples = set()
         self.add_apples()
 
         self.barriers = set()
         self.add_border()
 
-        x_dim,y_dim = self.window.shape
-        self.snake = Snake.Make(x=x_dim // 2, y=y_dim // 2, board=self)
         
     def add_apples(self):
-        while len(self.apples) < 10:
+        grid_size = self.window.shape[0]*self.window.shape[1]
+        snake_size = len(self.snake)
+        available_space = grid_size - snake_size
+            
+        while len(self.apples) < min(available_space, self.num_apples):
             self.add_apple()
 
     def add_apple(self):
-        rand_x = random.choice(range(self.window.shape[0]))
-        rand_y = random.choice(range(self.window.shape[1]))
-        elt = self.window.get_obj(rand_x, rand_y)
-        if elt is None:
-            self.apples.add(Apple(self, rand_x, rand_y))
+        loc = random.choice(np.argwhere(self.window.objects == None))
+        self.apples.add(Apple(self, *loc))
 
 
     def add_border(self):
