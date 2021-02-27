@@ -6,7 +6,6 @@ from .snake import Snake
 from .apple import Apple
 from .barrier import Barrier
 
-
 class Board(Drawable):
     """
     Represent the state of the game board.
@@ -23,6 +22,7 @@ class Board(Drawable):
         self.num_apples = num_apples
         self.apples = set()
         self.add_apples()
+        self._running = True
 
         self.barriers = set()
         self.add_border()
@@ -62,8 +62,10 @@ class Board(Drawable):
         self.snake.install_handlers(app)
 
     def tick(self):
-        self.snake.tick()
-        self.add_apples()
+        if self._running:
+            self.snake.tick()
+            self.add_apples()
 
     def game_over(self):
-        self.app.stop(None)
+        self._running = False
+        self.app.window.set_status("Game over")

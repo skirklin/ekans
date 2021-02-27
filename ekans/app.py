@@ -10,6 +10,7 @@ class Application:
         self._tick_rate = tick_rate
         self._refresh_rate = refresh_rate
         self._handlers = {}
+        self._next_tick = 0
 
         shape = window.shape
         if max_shape:
@@ -21,15 +22,16 @@ class Application:
         self.window.install_handlers(self)
 
         if max_shape:
-            max_shape=(100, 100)
-        self.board = Board(self, self.window[0:shape[0], 0:shape[1]-1])
+            max_shape = (100, 100)
+        self.board = Board(self, self.window[0 : shape[0], 0 : shape[1] - 1])
         self.board.install_handlers(self)
 
     def add_handler(self, event, handler):
         self._handlers.setdefault(event, []).append(handler)
 
-    def stop(self, _):
+    def stop(self, event=None):
         self._stop = True
+        self.render_thread.join()
 
     def start_listener_thread(self):
         self.listener_thread = threading.Thread(target=self.listen)
@@ -38,19 +40,27 @@ class Application:
 
     def start_render_thread(self):
         self.render_thread = threading.Thread(target=self.render)
-        self.render_thread.daemon = True
         self.render_thread.start()
+
+
+    def render(self):
+        while not self._stop:
+            self.draw()
+            self.window.render()
+            time.sleep(1 // self._refresh_rate)
 
     def run(self):
         self.start_listener_thread()
         self.start_render_thread()
-
+        
         while not self._stop:
             try:
-                self.board.tick()
-                time.sleep(1/self._tick_rate)
+                t = time.time()
+                if t > self._next_tick:
+                    self.tick()
+                time.sleep(1 / self._refresh_rate)
             except KeyboardInterrupt:
-                self.stop(None)
+                self.stop()
 
     def handle(self, event):
         for handler in self._handlers.get(event, []):
@@ -60,11 +70,9 @@ class Application:
         for event in self.window.events():
             self.handle(event)
 
-    def render(self):
-        while True:
-            self.draw()
-            self.window.render()
-            time.sleep(1//self._refresh_rate)
-
     def draw(self):
         self.board.draw()
+
+    def tick(self):
+        self.board.tick()
+        self._next_tick = time.time() + 1 / self._tick_rate

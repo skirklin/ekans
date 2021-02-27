@@ -45,7 +45,7 @@ class Snake(Drawable):
         back = self.head.back_dir()
         if direction != back:
             self.direction = direction
-        self.board.tick()
+        self.board.app.tick()
 
     def install_handlers(self, app):
         for key in KEY_MAP:

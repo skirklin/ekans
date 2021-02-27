@@ -8,10 +8,14 @@ class Window:
         self.set_pixels(pixels)
         self.clear()
         self.lock = threading.RLock()
-    
+
     def set_pixels(self, pixels):
         self.pixels = pixels
         self.objects = np.empty_like(pixels, dtype=object)
+
+    def set_status(self, msg):
+        console = msg.ljust(self.shape[0])
+        self.addstr(0, -1, console, None)
 
     def get_obj(self, x, y):
         return self.objects[x, y]
@@ -50,10 +54,10 @@ class Window:
 
     def addstr(self, x, y, chars, obj):
         for i, c in enumerate(chars):
-            if x+i >= self.pixels.shape[0]:
+            if x + i >= self.pixels.shape[0]:
                 break
-            self.pixels[x+i, y] = c
-            self.objects[x+i, y] = obj
+            self.pixels[x + i, y] = c
+            self.objects[x + i, y] = obj
 
     def clear(self):
         self.pixels[:] = " "
@@ -115,18 +119,11 @@ class CursesWindow(Window):
 
     def install_handlers(self, app):
         super().install_handlers(app)
-        app.add_handler('\x1b', app.stop)
-
+        app.add_handler("\x1b", app.stop)
 
     def events(self):
         while True:
             key = self.stdscr.getkey()
-            with self.lock:
-                if not isinstance(key, str):
-                    raise Exception(f"What is {repr(key)}")
-                console = repr(key).ljust(self.shape[0])
-                self.addstr(0, -1, console, None)
-                self.render()
             yield key
 
     def render(self):
