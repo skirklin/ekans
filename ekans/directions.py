@@ -14,5 +14,13 @@ ALL = {UP, DOWN, LEFT, RIGHT, UNCH}
 LOOKUP = {(d.dx, d.dy): d for d in ALL}
 
 
+KEY_MAP = {
+    "KEY_LEFT": LEFT,
+    "KEY_UP": UP,
+    "KEY_RIGHT": RIGHT,
+    "KEY_DOWN": DOWN,
+}
+
+
 def get_dir(dx, dy):
     return LOOKUP[dx, dy]

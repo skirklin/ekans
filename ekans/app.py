@@ -1,6 +1,6 @@
-import time
 import threading
 import numpy as np
+import time
 
 from .board import Board
 
@@ -15,21 +15,17 @@ class Application:
     def __init__(
         self,
         window,
-        refresh_rate=30,
-        tick_rate=5,
         max_shape=None,
         debug_console_height=3,
     ):
         self._stop = False
-        self._tick_rate = tick_rate
-        self._refresh_rate = refresh_rate
         self._handlers = {}
-        self._next_tick = 0
+        self._tick_lock = threading.Lock()
+        self._last_tick = 0
         self.max_shape = max_shape
 
         self.debug_console_height = debug_console_height
         self.debug_lines = []
-        self.children = []
 
         self.window = window  # total screen
         self.window.install_handlers(self)
@@ -63,17 +59,6 @@ class Application:
     def add_handler(self, event, handler):
         self._handlers.setdefault(event, []).append(handler)
 
-    def run_realtime(self):
-        t = threading.Thread(target=self.realtime_loop)
-        t.setDaemon(True)
-        t.start()
-
-    def realtime_loop(self):
-        while not self.is_stopped():
-            time.sleep(1 / self._tick_rate)
-            self.tick()
-            self.draw()
-
     def remove_handler(self, event, handler):
         try:
             handlers = self._handlers[event]
@@ -97,16 +82,15 @@ class Application:
         self.debug_lines.append(f"EVENT: {event}")
 
     def handle(self, event):
-        for handler in self._handlers.get(event, [self._record]):
+        for handler in self._handlers.get(event, []):
             handler(event)
 
     def draw(self):
-        self.window.clear()
-        for child in self.children:
-            child.draw()
-        self.board.draw()
-        self._draw_status()
-        self._draw_debug()
+        with self.window.lock:
+            self.window.clear()
+            self.board.draw()
+            self._draw_status()
+            self._draw_debug()
 
     def _draw_status(self):
         # Some board state is not rendered in the board, but the App may choose to present it
@@ -124,6 +108,7 @@ class Application:
                 self.window.addstr(0, i, dl, None)
 
     def tick(self):
-        self.board.tick()
-        self.draw()
-        self._next_tick = time.time() + 1 / self._tick_rate
+        with self._tick_lock:
+            self._last_tick = time.time()
+            self.board.tick()
+            self.draw()

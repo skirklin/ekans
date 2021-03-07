@@ -4,14 +4,13 @@ import numpy as np
 import time
 import io
 
-from .controller import KeyboardController
 
 
 class Window:
     def __init__(self, pixels):
         self.set_pixels(pixels)
         self.clear()
-        self.lock = threading.RLock()
+        self.lock = threading.Lock()
 
     def set_pixels(self, pixels):
         self.pixels = pixels
@@ -99,7 +98,7 @@ class VirtualWindow(Window):
 
 
 class CursesWindow(Window):
-    def __init__(self, refresh_rate=30):
+    def __init__(self, refresh_rate=15):
         # start with an "empty" window, which will be filled in within the running context
         pixels = np.empty((0, 0), dtype=str)
         super().__init__(pixels)
@@ -115,7 +114,6 @@ class CursesWindow(Window):
                 self._stop
 
     def __enter__(self):
-        self.logfile = open("log", "a+")
         self.stdscr = curses.initscr()
         shape = (curses.COLS, curses.LINES)  # pylint: disable=no-member
         self.set_pixels(np.empty(shape=shape, dtype=str))
@@ -140,14 +138,14 @@ class CursesWindow(Window):
         self.stdscr.keypad(False)
         curses.echo()
         curses.endwin()
-        self.logfile.close()
 
     def install_handlers(self, app):
         super().install_handlers(app)
         app.add_handler("\x1b", app.stop)  # esc
 
-    def controller(self):
-        return KeyboardController(self)
+    def controller(self, tick_rate=5):
+        from .controllers.keyboard import KeyboardController
+        return KeyboardController(self, tick_rate=tick_rate)
 
     def render(self):
         with self.lock:

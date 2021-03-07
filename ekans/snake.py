@@ -4,14 +4,7 @@ from .drawable import Drawable
 from .segment import Segment
 from .barrier import Barrier
 from .apple import Apple
-from .directions import LEFT, RIGHT, UP, DOWN
-
-KEY_MAP = {
-    "KEY_LEFT": LEFT,
-    "KEY_UP": UP,
-    "KEY_RIGHT": RIGHT,
-    "KEY_DOWN": DOWN,
-}
+from .directions import LEFT, RIGHT, UP, DOWN, KEY_MAP
 
 
 class Snake(Drawable):
