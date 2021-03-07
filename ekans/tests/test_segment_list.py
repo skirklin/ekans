@@ -3,7 +3,7 @@ from ..window import VirtualWindow
 from ..segment import Segment
 
 def test_segment_list():
-    w = VirtualWindow((20, 20), [])
+    w = VirtualWindow((20, 20))
     l = Snake(None, w)
     assert list(l) == []
 

@@ -4,7 +4,7 @@ from ..board import Board
 from ..app import Application
 
 def test_snake():
-    vw = VirtualWindow((20, 20), [])
+    vw = VirtualWindow((20, 20))
     app = Application(vw)
     b = Board(app, vw)
     b.snake.head.fwd_dir()

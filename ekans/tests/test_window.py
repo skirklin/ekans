@@ -7,7 +7,7 @@ def test_curses_window():
         window.render()
 
 def test_window_functionality():
-    w = VirtualWindow((20, 20), [])
+    w = VirtualWindow((20, 20))
     assert (10, 10) in w
     assert (19, 19) in w
     assert (0, 6) in w

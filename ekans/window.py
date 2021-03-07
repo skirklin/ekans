@@ -1,7 +1,10 @@
 import curses
 import threading
 import numpy as np
+import time
+import io
 
+from .controller import KeyboardController
 
 class Window:
     def __init__(self, pixels):
@@ -74,15 +77,19 @@ class Window:
     def install_handlers(self, app):
         pass
 
+    def __str__(self):
+        with self.lock:
+            buf = io.StringIO()
+            for y in range(self.pixels.shape[1]):
+                for x in range(self.pixels.shape[0]):
+                    buf.write(self.pixels[x, y])
+                buf.write("\n")
+        return buf.getvalue()
 
 class VirtualWindow(Window):
-    def __init__(self, shape, events):
-        self.set_pixels(np.empty(shape, dtype=str))
-        self._events = events  # an event generator
-        self.clear()
-
-    def events(self):
-        yield from self._events
+    def __init__(self, shape):
+        pixels = np.empty(shape, dtype=str)
+        super().__init__(pixels)
 
     def render(self):
         # VirtualWindows don't really get drawn.
@@ -90,10 +97,20 @@ class VirtualWindow(Window):
 
 
 class CursesWindow(Window):
-    def __init__(self):
+    def __init__(self, refresh_rate=30):
         # start with an "empty" window, which will be filled in within the running context
         pixels = np.empty((0, 0), dtype=str)
         super().__init__(pixels)
+        self._stop = False
+        self._refresh_rate = refresh_rate
+
+    def _render_loop(self):
+        while not self._stop:
+            try:
+                self.render()
+                time.sleep(1 / self._refresh_rate)
+            except KeyboardInterrupt:
+                self._stop
 
     def __enter__(self):
         self.logfile = open("log", "a+")
@@ -107,9 +124,16 @@ class CursesWindow(Window):
         curses.noecho()
         curses.cbreak()
         # curses.set_escdelay(0), need 3.9
+
+        self.render_thread = threading.Thread(target=self._render_loop)
+        self.render_thread.start()
+
         return self
 
     def __exit__(self, *execDetails):
+        self._stop = True
+        self.render_thread.join()
+
         curses.nocbreak()
         self.stdscr.keypad(False)
         curses.echo()
@@ -120,10 +144,8 @@ class CursesWindow(Window):
         super().install_handlers(app)
         app.add_handler("\x1b", app.stop)  # esc
 
-    def events(self):
-        while True:
-            key = self.stdscr.getkey()
-            yield key
+    def controller(self):
+        return KeyboardController(self)
 
     def render(self):
         with self.lock:
