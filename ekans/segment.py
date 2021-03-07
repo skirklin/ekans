@@ -18,15 +18,13 @@ for (p, n), v in list(SEGMENT_CHARS.items()):
     SEGMENT_CHARS[(n, p)] = v
 
 
-
-
 class Segment(Drawable):
     def __init__(self, board, x, y):
         self.board = board
         self.x = x
         self.y = y
 
-        # fwd means towards lower indices, means towards the head, 
+        # fwd means towards lower indices, means towards the head,
         # i.e. the direction of movement.
         self.fwd = None
         self.back = None
@@ -79,20 +77,12 @@ class Segment(Drawable):
         delta_key = tuple(
             [
                 get_dir(
-                    self.fwd.x - self.x
-                    if self.fwd is not self.snake.root
-                    else 0,
-                    self.fwd.y - self.y
-                    if self.fwd is not self.snake.root
-                    else 0,
+                    self.fwd.x - self.x if self.fwd is not self.snake.root else 0,
+                    self.fwd.y - self.y if self.fwd is not self.snake.root else 0,
                 ),
                 get_dir(
-                    self.back.x - self.x
-                    if self.back is not self.snake.root
-                    else 0,
-                    self.back.y - self.y
-                    if self.back is not self.snake.root
-                    else 0,
+                    self.back.x - self.x if self.back is not self.snake.root else 0,
+                    self.back.y - self.y if self.back is not self.snake.root else 0,
                 ),
             ]
         )

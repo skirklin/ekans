@@ -13,5 +13,6 @@ UNCH = Direction("UNCH", 0, 0)
 ALL = {UP, DOWN, LEFT, RIGHT, UNCH}
 LOOKUP = {(d.dx, d.dy): d for d in ALL}
 
+
 def get_dir(dx, dy):
     return LOOKUP[dx, dy]

@@ -10,8 +10,16 @@ from .board import Board
 #  - score keeping
 #  - virtualized play for adding AI strategies
 
+
 class Application:
-    def __init__(self, window, refresh_rate=30, tick_rate=5, max_shape=None, debug_console_height=3):
+    def __init__(
+        self,
+        window,
+        refresh_rate=30,
+        tick_rate=5,
+        max_shape=None,
+        debug_console_height=3,
+    ):
         self._stop = False
         self._tick_rate = tick_rate
         self._refresh_rate = refresh_rate
@@ -35,17 +43,18 @@ class Application:
                 min(self.max_shape[0], shape[0]),
                 min(self.max_shape[1], shape[1]),
             )
-        
+
         # top line as app status line
         # bottom line as game status line
         status_height = 1
         self.board = Board(
             self,
-            self.window[0 : shape[0], self.debug_console_height : shape[1] - status_height],
+            self.window[
+                0 : shape[0], self.debug_console_height : shape[1] - status_height
+            ],
         )
         self.board.install_handlers(self)
         self.board.pause()
-
 
     def set_status(self, msg):
         console = msg.ljust(self.window.shape[0])
@@ -61,10 +70,9 @@ class Application:
 
     def realtime_loop(self):
         while not self.is_stopped():
-            time.sleep(1/self._tick_rate)
+            time.sleep(1 / self._tick_rate)
             self.tick()
             self.draw()
-
 
     def remove_handler(self, event, handler):
         try:
@@ -75,8 +83,9 @@ class Application:
             try:
                 handlers.remove(handler)
             except ValueError:
-                self.debug_lines.append(f"Cannot remove {handler} from {event}, it isn't registered")
-
+                self.debug_lines.append(
+                    f"Cannot remove {handler} from {event}, it isn't registered"
+                )
 
     def stop(self):
         self._stop = True
@@ -102,13 +111,15 @@ class Application:
     def _draw_status(self):
         # Some board state is not rendered in the board, but the App may choose to present it
         width = self.board.window.shape[0]
-        template = "{{status:<{stw}}}{{score:<{scw}}}".format(stw=width-10, scw=10)
-        statusline = template.format(status=self.board.status, score=f"score: {self.board.snake.score}")
+        template = "{{status:<{stw}}}{{score:<{scw}}}".format(stw=width - 10, scw=10)
+        statusline = template.format(
+            status=self.board.status, score=f"score: {self.board.snake.score}"
+        )
         self.window.addstr(0, -1, statusline, None)
 
     def _draw_debug(self):
         if self.debug_console_height:
-            for i, line in enumerate(self.debug_lines[-self.debug_console_height:]):
+            for i, line in enumerate(self.debug_lines[-self.debug_console_height :]):
                 dl = line.ljust(self.window.shape[0])
                 self.window.addstr(0, i, dl, None)
 

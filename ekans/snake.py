@@ -13,6 +13,7 @@ KEY_MAP = {
     "KEY_DOWN": DOWN,
 }
 
+
 class Snake(Drawable):
     def __init__(self, direction, board):
         self.direction = direction
@@ -23,7 +24,7 @@ class Snake(Drawable):
         self.root.back = self.root
         self.root.fwd = self.root
         self.length = 0
-    
+
     @property
     def window(self):
         return self.board.window
@@ -102,7 +103,6 @@ class Snake(Drawable):
         )
         self.insert(0, new_seg)
 
-
     def grow_backward(self, directions):
         tail = self.tail
 
@@ -169,7 +169,7 @@ class Snake(Drawable):
             else:
                 n = n.fwd
                 i += 1
-                
+
         self._insert_after(n, seg)
 
     def remove(self, i):

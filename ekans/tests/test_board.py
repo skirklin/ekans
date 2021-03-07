@@ -7,7 +7,7 @@ from ..controller import ScriptedController
 
 def test_self_collision():
     controller = ScriptedController([" ", "KEY_LEFT", "KEY_DOWN", "KEY_RIGHT"])
-    vw = VirtualWindow((20, 20)) # this should direct a snake back into itself
+    vw = VirtualWindow((20, 20))  # this should direct a snake back into itself
     app = Application(vw, debug_console_height=0)
     controller.run(app)
     print()

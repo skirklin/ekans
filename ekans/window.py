@@ -6,6 +6,7 @@ import io
 
 from .controller import KeyboardController
 
+
 class Window:
     def __init__(self, pixels):
         self.set_pixels(pixels)
@@ -18,7 +19,7 @@ class Window:
 
     def get_obj(self, x, y):
         """
-        Return the object underlying the visible pixel at position (x, y) 
+        Return the object underlying the visible pixel at position (x, y)
         """
         return self.objects[x, y]
 
@@ -85,6 +86,7 @@ class Window:
                     buf.write(self.pixels[x, y])
                 buf.write("\n")
         return buf.getvalue()
+
 
 class VirtualWindow(Window):
     def __init__(self, shape):

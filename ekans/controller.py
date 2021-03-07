@@ -1,6 +1,7 @@
 import abc
 import time
 
+
 class Controller(abc.ABC):
     @abc.abstractmethod
     def run(self, app):
@@ -20,8 +21,10 @@ class KeyboardController(Controller):
             except KeyboardInterrupt:
                 app.stop()
 
+
 class AIController(Controller):
     pass
+
 
 class ScriptedController(Controller):
     def __init__(self, events):

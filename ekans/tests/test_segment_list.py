@@ -2,6 +2,7 @@ from ..snake import Snake
 from ..window import VirtualWindow
 from ..segment import Segment
 
+
 def test_segment_list():
     w = VirtualWindow((20, 20))
     l = Snake(None, w)
@@ -33,5 +34,5 @@ def test_segment_list():
     assert list(l) == [s3, s4, s, s2]
 
     l.remove(1)
-    
+
     assert list(l) == [s3, s, s2]

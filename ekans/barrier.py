@@ -1,4 +1,6 @@
 from .drawable import Drawable
+
+
 class Barrier(Drawable):
     def __init__(self, board, x, y):
         self.board = board
