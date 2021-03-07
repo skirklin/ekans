@@ -29,10 +29,10 @@ class Snake(Drawable):
         tail.x, tail.y = self.peek()
         self.insert(0, tail)
 
-    def peek(self):
+    def peek(self, direction=None):
         head = self.head
-        x = head.x + self.direction.dx
-        y = head.y + self.direction.dy
+        x = head.x + (direction or self.direction).dx
+        y = head.y + (direction or self.direction).dy
         return (x, y)
 
     def set_direction(self, key):
@@ -40,7 +40,7 @@ class Snake(Drawable):
         back = self.head.back_dir()
         if direction != back:
             self.direction = direction
-        self.board.app.tick()
+        self.board.app._last_tick = 0
 
     def install_handlers(self, app):
         for key in KEY_MAP:

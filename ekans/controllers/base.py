@@ -1,10 +1,12 @@
 import abc
 import time
 
+
 class Controller(abc.ABC):
     @abc.abstractmethod
     def run(self, app):
         pass
+
 
 class HeadlessController(Controller):
     def __init__(self, wait=0, block=False):
@@ -18,10 +20,10 @@ class HeadlessController(Controller):
     def run(self, app):
         for event in self.events(app):
             app.handle(event)
+            app.tick()
             if self.wait:
                 time.sleep(self.wait)
             app.draw()
         if self.block:
             while True:
                 time.sleep(1)
-

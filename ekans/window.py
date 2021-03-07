@@ -5,7 +5,6 @@ import time
 import io
 
 
-
 class Window:
     def __init__(self, pixels):
         self.set_pixels(pixels)
@@ -98,7 +97,7 @@ class VirtualWindow(Window):
 
 
 class CursesWindow(Window):
-    def __init__(self, refresh_rate=15):
+    def __init__(self, refresh_rate=30):
         # start with an "empty" window, which will be filled in within the running context
         pixels = np.empty((0, 0), dtype=str)
         super().__init__(pixels)
@@ -145,6 +144,7 @@ class CursesWindow(Window):
 
     def controller(self, tick_rate=5):
         from .controllers.keyboard import KeyboardController
+
         return KeyboardController(self, tick_rate=tick_rate)
 
     def render(self):
