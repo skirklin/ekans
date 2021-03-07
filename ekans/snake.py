@@ -17,6 +17,7 @@ class Snake(Drawable):
     def __init__(self, direction, board):
         self.direction = direction
         self.board = board
+        self.score = 0
 
         self.root = Segment(None, None, None)
         self.root.back = self.root
@@ -51,10 +52,15 @@ class Snake(Drawable):
         for key in KEY_MAP:
             app.add_handler(key, self.set_direction)
 
+    def remove_handlers(self, app):
+        for key in KEY_MAP:
+            app.remove_handler(key, self.set_direction)
+
     def tick(self):
         peek = self.peek()
         hit = self.window.get_obj(*peek)
         if isinstance(hit, Apple):
+            self.score += 1
             self.board.apples.remove(hit)
             self.grow_forward()
         elif isinstance(hit, (Barrier, Segment)):
@@ -101,11 +107,16 @@ class Snake(Drawable):
         tail = self.tail
 
         for direction in directions:
-            new_seg = self.new_segment(
-                tail.x + direction.dx,
-                tail.y + direction.dy,
-            )
-            if new_seg.coord in self.window:
+            next_pos = (tail.x + direction.dx, tail.y + direction.dy)
+            if next_pos not in self.window:
+                continue
+
+            hit = self.window.get_obj(*next_pos)
+            if hit is None:
+                new_seg = self.new_segment(
+                    tail.x + direction.dx,
+                    tail.y + direction.dy,
+                )
                 break
         else:
             raise Exception("Unable to append segment, ran into window borders")

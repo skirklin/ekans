@@ -13,11 +13,10 @@ class Window:
         self.pixels = pixels
         self.objects = np.empty_like(pixels, dtype=object)
 
-    def set_status(self, msg):
-        console = msg.ljust(self.shape[0])
-        self.addstr(0, -1, console, None)
-
     def get_obj(self, x, y):
+        """
+        Return the object underlying the visible pixel at position (x, y) 
+        """
         return self.objects[x, y]
 
     @property
@@ -119,7 +118,7 @@ class CursesWindow(Window):
 
     def install_handlers(self, app):
         super().install_handlers(app)
-        app.add_handler("\x1b", app.stop)
+        app.add_handler("\x1b", app.stop)  # esc
 
     def events(self):
         while True:
