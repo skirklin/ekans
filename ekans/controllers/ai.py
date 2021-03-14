@@ -66,6 +66,55 @@ class PartitionConstraint(AIController):
             if k in segments and sizes[segments[k]] == max(sizes.values())
         ]
 
+class AvoidPartitioning(PartitionConstraint):
+    def get_allowed_directions(self, app):
+        max_sid = len(np.unique(self.partitioning.compute()))
+
+        snake = app.board.snake
+        segments = {}
+        for k, d in snake.allowed_moves().items():
+
+            pi, pj = snake.peek(d)
+            sid = self.partitioning.segmentation[pi, pj]
+            if sid != 0:
+                segments[k] = sid
+
+        count = lambda sid: (self.partitioning.segmentation == sid).sum()
+
+        if not segments:
+            return []
+
+        sizes = {s: count(s) for s in set(segments.values())}
+
+        partition_conserving_segments = {}
+        app.debug_lines.append(f"segments: {segments}")
+        for k, sid in segments.items():
+            pi, pj = snake.peek(KEY_MAP[k])
+            this_max_sid = len(np.unique(self.partitioning.compute(avoid=[(pi, pj)])))
+            if max_sid and this_max_sid > max_sid:
+                app.debug_lines.append(f"avoiding {k} because it creates a partition (max_sid={max_sid}, this_max_sid={this_max_sid}")
+                continue
+
+            partition_conserving_segments[k] = sid
+
+        key_to_size = {k: sizes[sid] for k, sid in segments.items()}
+        app.debug_lines.append(f"pc segs: {partition_conserving_segments}")
+        app.debug_lines.append(f"segment sizes: {key_to_size}")
+        if partition_conserving_segments:
+            pc_sizes = {sid: size for sid, size in sizes.items() if sid in partition_conserving_segments.values()}
+            if any([v > len(snake) for v in pc_sizes.values()]):
+                segments = partition_conserving_segments
+                sizes = pc_sizes
+        
+        sizes = {sid: size for sid, size in sizes.items() if sid in segments.values()}
+        if all([v > len(snake) for v in sizes.values()]):
+            return list(segments.keys())
+        return [
+            k
+            for k in segments
+            if sizes[segments[k]] == max(sizes.values())
+        ]
+
 
 class NaiveAIController(PartitionConstraint, RandomAIController):
     pass
@@ -103,6 +152,7 @@ class HungryOptimizer(RandomAIController):
 
         scores = {k: tgt_func(k) for k in options}
         if not scores:
+            app.debug_lines.append("No options, returning forward")
             return DIR_MAP[snake.head.d]
 
         if self._audit_log:
@@ -113,5 +163,6 @@ class HungryOptimizer(RandomAIController):
         return min(scores, key=lambda x: scores[x])
 
 
-class HungryAIController(HungryOptimizer, PartitionConstraint):
+class HungryAIController(HungryOptimizer, AvoidPartitioning):
     pass
+

@@ -28,7 +28,11 @@ def score(name, n=30):
     
     total_score = sum(app['score'] for app in apps)
     total_turns = sum(app['turns'] for app in apps)
+    board = apps[0]['board']  # if adding random barriers, need to change
+    total_size = len([c for c in board if c not in ("\n", "#")])
     print()
+    print(f"average score: {total_score/len(apps)} (or {100*total_score/len(apps)/total_size:.2f})")
+    print(f"average game length: {total_turns/len(apps):.2f}")
     print(f"total turns: {total_turns}")
     print(f"total score: {total_score}")
 

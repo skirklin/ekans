@@ -17,9 +17,10 @@ class Partition:
         self.segmentation = np.zeros(board.window.shape, dtype=int)
         self.last_turn = board.snake.turn
 
-    def compute(self):
+    def compute(self, avoid=None):
         curr_id = 1
         window = self.board.window
+        avoid = avoid or []
 
         id_to_idx = collections.defaultdict(set)
         seg = self.segmentation
@@ -27,6 +28,8 @@ class Partition:
 
         for i in range(window.shape[0]):
             for j in range(window.shape[1]):
+                if (i, j) in avoid:
+                    continue
                 if type(window.objects[i, j]) in (Barrier, Segment):
                     continue
 
