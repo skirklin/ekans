@@ -27,7 +27,26 @@ class HeadlessController(Controller):
     def events(self, app):
         pass
 
+    def get_handlers(self):
+        return {}
+
+    def install_handlers(self, app):
+        for event, handler in self.get_handlers().items():
+            app.add_handler(event, handler)
+    
+    def remove_handlers(self, app):
+        for event, handler in self.get_handlers().items():
+            app.remove_handler(event, handler)
+
     def run(self, app):
+        try:
+            self.install_handlers(app)
+            self._run(app)
+
+        finally:
+            self.remove_handlers(app)
+
+    def _run(self, app):
         for event in self.events(app):
             app.handle(event)
             app.tick()

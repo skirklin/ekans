@@ -19,10 +19,11 @@ for (p, n), v in list(SEGMENT_CHARS.items()):
 
 
 class Segment(Drawable):
-    def __init__(self, board, x, y):
+    def __init__(self, board, x, y, d):
         self.board = board
         self.x = x
         self.y = y
+        self.d = d
 
         # fwd means towards lower indices, means towards the head,
         # i.e. the direction of movement.
@@ -37,28 +38,6 @@ class Segment(Drawable):
     @coord.setter
     def coord(self, value):
         self.x, self.y = value
-
-    def fwd_dir(self):
-        if self.fwd is self.snake.root:
-            return self.snake.direction
-        return get_dir(
-            self.fwd.x - self.x,
-            self.fwd.y - self.y,
-        )
-
-    def back_dir(self):
-        if self.back is self.snake.root:
-            return UNCH
-        return get_dir(
-            self.back.x - self.x,
-            self.back.y - self.y,
-        )
-
-    def check(self):
-        assert self.back
-        assert self.fwd
-        assert self.fwd_dir() in ALL
-        assert self.back_dir() in ALL
 
     @property
     def window(self):

@@ -15,7 +15,7 @@ class Snake(Drawable):
         self.score = 0
         self.turn = 0
 
-        self.root = Segment(None, None, None)
+        self.root = Segment(None, None, None, None)
         self.root.back = self.root
         self.root.fwd = self.root
         self.length = 0
@@ -29,6 +29,7 @@ class Snake(Drawable):
         tail = self.tail
         self._remove(self.tail)
         tail.x, tail.y = self.peek()
+        tail.d = self.direction
         self.insert(0, tail)
 
     def peek(self, direction=None):
@@ -39,7 +40,7 @@ class Snake(Drawable):
 
     def set_direction(self, app, key, payload):
         direction = KEY_MAP[key]
-        back = self.head.back_dir()
+        back = self.head.d.back
         if direction != back:
             self.direction = direction
         app._last_tick = 0
@@ -58,23 +59,37 @@ class Snake(Drawable):
         if isinstance(hit, Apple):
             self.score += 1
             app.handle(REMOVE_APPLE, {"apple": hit})
-            self.grow_forward()
+            self.grow_forward(app)
         elif isinstance(hit, (Barrier, Segment)):
             self.board.game_over()
         else:
             self.move()
         self.turn += 1
 
+    def check_dir(self, d):
+        pi, pj = self.peek(d)
+        obj = self.window.get_obj(pi, pj)
+        if type(obj) in (Barrier, Segment):
+            return False
+        return True
+
+    @property
+    def forward(self):
+        return self.direction
+
+    def allowed_moves(self):
+        return {k: d for k, d in KEY_MAP.items() if self.check_dir(d)}
+        
     @classmethod
     def Make(cls, board, x, y, size=8):
         s = cls(UP, board)
-        s.append(s.new_segment(x, y))
+        s.append(s.new_segment(x, y, UP))
         for _ in range(size - 1):
             s.grow_backward([DOWN, RIGHT])
         return s
 
-    def new_segment(self, x, y):
-        return Segment(self.board, x, y)
+    def new_segment(self, x, y, d):
+        return Segment(self.board, x, y, d)
 
     def get_char(self):
         return "$"
@@ -91,11 +106,12 @@ class Snake(Drawable):
     def tail(self):
         return self[-1]
 
-    def grow_forward(self):
+    def grow_forward(self, app):
         head = self.head
         new_seg = self.new_segment(
             head.x + self.direction.dx,
             head.y + self.direction.dy,
+            self.direction,
         )
         self.insert(0, new_seg)
 
@@ -112,6 +128,7 @@ class Snake(Drawable):
                 new_seg = self.new_segment(
                     tail.x + direction.dx,
                     tail.y + direction.dy,
+                    direction,
                 )
                 break
         else:
