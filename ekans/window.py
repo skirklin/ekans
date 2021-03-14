@@ -9,9 +9,9 @@ from .events import TICK
 
 class Window:
     def __init__(self, pixels):
+        self.lock = threading.Lock()
         self.set_pixels(pixels)
         self.clear()
-        self.lock = threading.Lock()
 
     def set_pixels(self, pixels):
         self.pixels = pixels

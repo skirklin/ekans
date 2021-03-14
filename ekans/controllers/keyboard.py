@@ -15,7 +15,8 @@ class KeyboardController(Controller):
         while not app.is_stopped():
             try:
                 event = self.window.stdscr.getkey()
-                app.handle(event)
+                with self.window.lock:
+                    app.handle(event)
             except KeyboardInterrupt:
                 app.stop()
 

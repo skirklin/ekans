@@ -43,7 +43,6 @@ class PartitionConstraint(AIController):
         super().run(app)
 
     def get_allowed_directions(self, app):
-        app.board.draw()
         self.partitioning.compute()
         snake = app.board.snake
         segments = {}

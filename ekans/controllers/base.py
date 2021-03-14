@@ -52,7 +52,6 @@ class HeadlessController(Controller):
             app.tick()
             if self.wait:
                 time.sleep(self.wait)
-            app.draw()
         if self.block:
             while True:
                 time.sleep(1)
