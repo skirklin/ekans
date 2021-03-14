@@ -1,6 +1,6 @@
-from ..snake import Snake
-from ..window import VirtualWindow
-from ..segment import Segment
+from ekans.snake import Snake
+from ekans.window import VirtualWindow
+from ekans.segment import Segment
 
 
 def test_segment_list():

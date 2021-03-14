@@ -4,6 +4,7 @@ from .drawable import Drawable
 from .segment import Segment
 from .barrier import Barrier
 from .apple import Apple
+from .events import ADD_APPLE, REMOVE_APPLE
 from .directions import LEFT, RIGHT, UP, DOWN, KEY_MAP
 
 
@@ -12,6 +13,7 @@ class Snake(Drawable):
         self.direction = direction
         self.board = board
         self.score = 0
+        self.turn = 0
 
         self.root = Segment(None, None, None)
         self.root.back = self.root
@@ -35,12 +37,12 @@ class Snake(Drawable):
         y = head.y + (direction or self.direction).dy
         return (x, y)
 
-    def set_direction(self, key):
+    def set_direction(self, app, key, payload):
         direction = KEY_MAP[key]
         back = self.head.back_dir()
         if direction != back:
             self.direction = direction
-        self.board.app._last_tick = 0
+        app._last_tick = 0
 
     def install_handlers(self, app):
         for key in KEY_MAP:
@@ -50,17 +52,18 @@ class Snake(Drawable):
         for key in KEY_MAP:
             app.remove_handler(key, self.set_direction)
 
-    def tick(self):
+    def tick(self, app):
         peek = self.peek()
         hit = self.window.get_obj(*peek)
         if isinstance(hit, Apple):
             self.score += 1
-            self.board.apples.remove(hit)
+            app.handle(REMOVE_APPLE, {"apple": hit})
             self.grow_forward()
         elif isinstance(hit, (Barrier, Segment)):
             self.board.game_over()
         else:
             self.move()
+        self.turn += 1
 
     @classmethod
     def Make(cls, board, x, y, size=8):

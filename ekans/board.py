@@ -7,6 +7,7 @@ from .drawable import Drawable
 from .snake import Snake
 from .apple import Apple
 from .barrier import Barrier
+from .events import ADD_APPLE, REMOVE_APPLE
 
 
 class State(enum.Enum):
@@ -22,7 +23,7 @@ class Board(Drawable):
     """
 
     def __init__(self, app, window, num_apples=0.01):
-        self.app = app
+        self._state = State.INIT
         self.window = window
         self.snake = None
         x_dim, y_dim = self.window.shape
@@ -33,34 +34,46 @@ class Board(Drawable):
         self.draw()
 
         self.snake = Snake.Make(x=x_dim // 2, y=y_dim // 2, board=self)
+        self.install_handlers(app)
 
         if num_apples < 1:
             num_apples = x_dim * y_dim * num_apples
 
         self.num_apples = num_apples
-        self.add_apples()
-        self._state = State.INIT
+        self.add_apples(app)
         self.status = ""
 
-    def add_apples(self):
+    def add_apples(self, app):
         grid_size = self.window.shape[0] * self.window.shape[1]
         snake_size = len(self.snake)
+        self.snake.draw()
         available_space = grid_size - snake_size
 
         while len(self.apples) < min(available_space, self.num_apples):
-            self.add_apple()
+            self.add_apple(app)
 
-    def add_apple(self):
+    def add_apple(self, app):
         loc = random.choice(np.argwhere(self.window.objects == None))
-        self.apples.add(Apple(self, *loc))
+        assert self.window.get_obj(*loc) is None, self.window.get_obj(*loc)
+        a = Apple(self, *loc)
+        app.handle(ADD_APPLE, {"apple": a})
+
+    def _remove_apple(self, app, event, payload):
+        self.apples.remove(payload['apple'])
+
+    def _add_apple(self, app, event, payload):
+        self.apples.add(payload['apple'])
+        
+    def add_barrier(self, x, y):
+        self.barriers.add(Barrier(self, x, y))
 
     def add_border(self):
         for x in range(self.window.shape[0]):
-            self.barriers.add(Barrier(self, x, 0))
-            self.barriers.add(Barrier(self, x, -1))
+            self.add_barrier(x, 0)
+            self.add_barrier(x, self.window.shape[1] - 1)
         for y in range(self.window.shape[1] - 1):
-            self.barriers.add(Barrier(self, 0, y))
-            self.barriers.add(Barrier(self, -1, y))
+            self.add_barrier(0, y)
+            self.add_barrier(self.window.shape[0] - 1, y)
 
     def draw(self):
         self.window.clear()
@@ -74,10 +87,14 @@ class Board(Drawable):
     def install_handlers(self, app):
         self.snake.install_handlers(app)
         app.add_handler(" ", self.toggle_pause)
+        app.add_handler(ADD_APPLE, self._add_apple)
+        app.add_handler(REMOVE_APPLE, self._remove_apple)
 
     def remove_handlers(self, app):
         self.snake.remove_handlers(app)
         app.remove_handler(" ", self.toggle_pause)
+        app.remove_handler(ADD_APPLE, self._add_apple)
+        app.remove_handler(REMOVE_APPLE, self._remove_apple)
 
     def game_is_over(self):
         return self._state is State.GAME_OVER
@@ -88,14 +105,14 @@ class Board(Drawable):
     def game_is_paused(self):
         return self._state is State.PAUSED
 
-    def toggle_pause(self, event):
+    def toggle_pause(self, app, event, payload):
         if self._state is State.RUNNING:
             self.pause()
         elif self._state in (State.PAUSED, State.INIT):
             self.resume()
         else:
-            self.remove_handlers(self.app)
-            self.app.setup_board()
+            self.remove_handlers(app)
+            app.setup_board()
 
     def pause(self):
         self._state = State.PAUSED
@@ -109,10 +126,10 @@ class Board(Drawable):
         self._state = State.RUNNING
         self.status = ""
 
-    def tick(self):
+    def tick(self, app):
         if self.game_is_running():
-            self.snake.tick()
-            self.add_apples()
+            self.snake.tick(app)
+            self.add_apples(app)
 
     def game_over(self):
         self._state = State.GAME_OVER

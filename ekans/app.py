@@ -3,6 +3,7 @@ import numpy as np
 import time
 
 from .board import Board
+from .events import TICK
 
 
 # TODOS:
@@ -49,7 +50,6 @@ class Application:
                 0 : shape[0], self.debug_console_height : shape[1] - status_height
             ],
         )
-        self.board.install_handlers(self)
         self.board.pause()
 
     def set_status(self, msg):
@@ -57,7 +57,14 @@ class Application:
         self.window.addstr(0, -1, console, None)
 
     def add_handler(self, event, handler):
-        self._handlers.setdefault(event, []).append(handler)
+        try:
+            handlers = self._handlers[event]
+        except KeyError:
+            handlers = self._handlers[event] = []
+
+        if handler in handlers:
+            self.debug_lines.append(f"Multiple copies of {handler} installed for {event}")
+        handlers.append(handler)
 
     def remove_handler(self, event, handler):
         try:
@@ -81,9 +88,14 @@ class Application:
     def _record(self, event):
         self.debug_lines.append(f"EVENT: {event}")
 
-    def handle(self, event):
+    def handle(self, event, payload=None):
         for handler in self._handlers.get(event, []):
-            handler(event)
+            try:
+                handler(self, event, payload or {})
+            except Exception:
+                import traceback
+
+                self.debug_lines += traceback.format_exc().split("\n")
 
     def draw(self):
         with self.window.lock:
@@ -108,7 +120,8 @@ class Application:
                 self.window.addstr(0, i, dl, None)
 
     def tick(self):
+        self.handle(TICK)
         with self._tick_lock:
             self._last_tick = time.time()
-            self.board.tick()
+            self.board.tick(self)
             self.draw()

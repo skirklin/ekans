@@ -1,8 +1,8 @@
-from ..snake import Snake
-from ..window import VirtualWindow
-from ..board import Board
-from ..app import Application
-from ..controllers.manual import ManualController
+from ekans.snake import Snake
+from ekans.window import VirtualWindow
+from ekans.board import Board
+from ekans.app import Application
+from ekans.controllers.manual import ManualController
 
 
 def test_self_collision():

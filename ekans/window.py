@@ -4,6 +4,8 @@ import numpy as np
 import time
 import io
 
+from .events import TICK
+
 
 class Window:
     def __init__(self, pixels):
@@ -14,6 +16,11 @@ class Window:
     def set_pixels(self, pixels):
         self.pixels = pixels
         self.objects = np.empty_like(pixels, dtype=object)
+        self.coords = np.meshgrid(
+            range(self.pixels.shape[0]),
+            range(self.pixels.shape[1]),
+            indexing="ij",
+        )
 
     def get_obj(self, x, y):
         """
@@ -95,6 +102,13 @@ class VirtualWindow(Window):
         # VirtualWindows don't really get drawn.
         return
 
+    def _log(self, app, event, payload):
+        import sys
+        sys.stdout.write(f"\rturn: {app.board.snake.turn} score: {app.board.snake.score}")
+
+    def install_handlers(self, app):
+        super().install_handlers(app)
+        app.add_handler(TICK, self._log)
 
 class CursesWindow(Window):
     def __init__(self, refresh_rate=30):
@@ -140,7 +154,7 @@ class CursesWindow(Window):
 
     def install_handlers(self, app):
         super().install_handlers(app)
-        app.add_handler("\x1b", app.stop)  # esc
+        app.add_handler("\x1b", lambda app, event: app.stop())  # esc
 
     def controller(self, tick_rate=5):
         from .controllers.keyboard import KeyboardController

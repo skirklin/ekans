@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+
+import click
+import ekans.cmdline
+
+
+@click.group()
+def cli():
+    pass
+
+
+@click.command()
+def play():
+    ekans.cmdline.play()
+
+@click.command()
+@click.option('--name', default="RandomAIController")
+@click.option("--headless/--no-headless", default=False)
+def ai(name, headless):
+    ekans.cmdline.ai(name, headless=headless)
+
+@click.command()
+@click.option('--name', default="RandomAIController")
+@click.option('-n', default=30)
+def score(name, n):
+    ekans.cmdline.score(name, n=n)
+
+cli.add_command(play)
+cli.add_command(ai)
+cli.add_command(score)
+
+cli()
