@@ -17,7 +17,7 @@ class Application:
         self,
         window,
         max_shape=None,
-        debug_console_height=16,
+        debug_console_height=3,
     ):
         self._stop = False
         self._handlers = {}

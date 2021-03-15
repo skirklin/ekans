@@ -6,7 +6,7 @@ import json
 import abc
 
 from .base import HeadlessController
-from .. import vision
+from .. import pathing
 from ..barrier import Barrier
 from ..segment import Segment
 from ..directions import KEY_MAP, DIR_MAP
@@ -39,7 +39,7 @@ class RandomAIController(AIController):
 
 class PartitionConstraint(AIController):
     def run(self, app):
-        self.partitioning = vision.Partition(app.board)
+        self.partitioning = pathing.Partition(app.board)
         super().run(app)
 
     def get_allowed_directions(self, app):
@@ -122,7 +122,7 @@ class NaiveAIController(PartitionConstraint, RandomAIController):
 
 class HungryOptimizer(RandomAIController):
     def run(self, app):
-        self.field = vision.field(app.board)
+        self.field = pathing.field(app.board)
         super().run(app)
 
     def get_handlers(self):
@@ -132,10 +132,10 @@ class HungryOptimizer(RandomAIController):
         }
 
     def _update_gradient_add(self, app, event, payload):
-        vision.update_apple_field(app.board.window, payload["apple"], self.field, 1)
+        pathing.update_apple_field(app.board.window, payload["apple"], self.field, 1)
 
     def _update_gradient_remove(self, app, event, payload):
-        vision.update_apple_field(app.board.window, payload["apple"], self.field, -1)
+        pathing.update_apple_field(app.board.window, payload["apple"], self.field, -1)
 
     def pick_direction(self, app, options):
         snake = app.board.snake

@@ -2,7 +2,7 @@ import mock
 import random
 import pytest
 
-from ekans.vision import partition, field
+from ekans.pathing import Partition, field
 from ekans.board import Board
 from ekans.app import Application
 from ekans.window import VirtualWindow
@@ -57,7 +57,7 @@ def board(request):
 def test_partition(request, board):
     print(request)
     board.draw()
-    seg = partition(board)
+    seg = Partition(board).compute()
     print()
     print(str(board.window))
     print(seg.T)
