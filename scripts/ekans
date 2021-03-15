@@ -10,8 +10,9 @@ def cli():
 
 
 @click.command()
-def play():
-    ekans.cmdline.play()
+@click.option('--level', default="Bars()")
+def play(level):
+    ekans.cmdline.play(level=level)
 
 @click.command()
 @click.option('--name', default="RandomAIController")
