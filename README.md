@@ -13,5 +13,10 @@ cd ekans
 pip install -U pip
 pip install -r requirements.txt
 pip install -e .
-ekans
 ```
+
+## Play yourself
+ekans play
+
+## Run bot controller
+ekans ai --name RandomAIController|HungryAIController
