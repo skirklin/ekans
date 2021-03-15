@@ -6,20 +6,20 @@ def get_max_shape():
     env_shape = os.environ.get("EKANS_SHAPE", "40x40")
     return tuple(map(int, env_shape.split("x")))
 
-def play():
+def play(level="Bars()", seed=None):
     with CursesWindow() as window:
-        app = Application(window, max_shape=get_max_shape())
+        app = Application(window, max_shape=get_max_shape(), level=level)
         controller = window.controller(tick_rate=5)
         controller.run(app)
         return app
 
-def score(name, n=30):
+def score(name, level="Bars()", n=30, seed=None):
     from multiprocessing import Pool
 
     if n > 1:
         with Pool() as p:
 
-            results = [p.apply_async(ai, (name,), {"headless": True}) for i in range(n)]
+            results = [p.apply_async(ai, (name,), {"headless": True, "level": level}) for i in range(n)]
             apps = [r.get() for r in results]
     else:
         apps = [
@@ -36,7 +36,7 @@ def score(name, n=30):
     print(f"total turns: {total_turns}")
     print(f"total score: {total_score}")
 
-def ai(name, headless=False):
+def ai(name, level="Bars()", headless=False, seed=None):
     import ekans.controllers.ai
 
     if headless:
@@ -45,7 +45,7 @@ def ai(name, headless=False):
         window_func = lambda: CursesWindow()
 
     with window_func() as window:
-        app = Application(window, max_shape=get_max_shape())
+        app = Application(window, max_shape=get_max_shape(), level=level)
 
         Controller = getattr(ekans.controllers.ai, name)
         controller = Controller(0, block=not headless)

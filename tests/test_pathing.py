@@ -7,31 +7,35 @@ from ekans.board import Board
 from ekans.app import Application
 from ekans.window import VirtualWindow
 
-def _diamond(b):
+def _diamond(app):
+    b = app.board
     for i in range(3):
         b.add_barrier(5+i, 5-i)
         b.add_barrier(5+i, 5+i)
         b.add_barrier(7+i, 7-i)
         b.add_barrier(7+i, 3+i)
 
-def _open_box(b):    
+def _open_box(app):
+    b = app.board  
     for i in range(4):
         b.add_barrier(3, i+3)
         b.add_barrier(6, i+3)
         b.add_barrier(i+3, 3)
 
-def _box(b):
+def _box(app):
+    b = app.board
     for i in range(4):
         b.add_barrier(3, i+3)
         b.add_barrier(6, i+3)
         b.add_barrier(i+3, 3)
         b.add_barrier(i+3, 6)
 
-def _random(b):
+def _random(app):
+    b = app.board
     for _ in range(10):
         b.add_barrier(
-            random.choice(range(b.window.shape[0])),
-            random.choice(range(b.window.shape[1])),
+            app.random.choice(range(b.window.shape[0])),
+            app.random.choice(range(b.window.shape[1])),
         )
 
 
@@ -47,10 +51,9 @@ _plans = {
 )
 def board(request):
     vw = VirtualWindow((20, 20))
-    with mock.patch("random.choice", random.Random(1234).choice):
-        app = Application(vw)
-        f = _plans[request.param]
-        f(app.board)
+    app = Application(vw, seed=1234)
+    f = _plans[request.param]
+    f(app)
     return app.board
 
 

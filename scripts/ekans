@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
 
 import os
-import random
 import click
 import ekans.cmdline
-
-if seed := os.environ.get("EKANS_RANDOM_SEED"):
-    random.seed(int(seed))
 
 @click.group()
 def cli():
@@ -19,15 +15,19 @@ def play():
 
 @click.command()
 @click.option('--name', default="RandomAIController")
+@click.option('--seed')
+@click.option('--level', default="Bars()")
 @click.option("--headless/--no-headless", default=False)
-def ai(name, headless):
-    ekans.cmdline.ai(name, headless=headless)
+def ai(name, headless, level, seed=None):
+    ekans.cmdline.ai(name, headless=headless, seed=seed, level=level)
 
 @click.command()
 @click.option('--name', default="RandomAIController")
+@click.option('--level', default="Bars()")
+@click.option('--seed', default=1234)
 @click.option('-n', default=30)
-def score(name, n):
-    ekans.cmdline.score(name, n=n)
+def score(name, n, seed, level):
+    ekans.cmdline.score(name, n=n, seed=seed, level=level)
 
 cli.add_command(play)
 cli.add_command(ai)

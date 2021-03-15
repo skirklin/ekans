@@ -1,9 +1,11 @@
 import threading
 import numpy as np
 import time
+import random
 
 from .board import Board
 from .events import TICK
+from . import levels
 
 
 # TODOS:
@@ -18,19 +20,37 @@ class Application:
         window,
         max_shape=None,
         debug_console_height=3,
+        level="Empty()",
+        seed=None,
     ):
         self._stop = False
         self._handlers = {}
         self._tick_lock = threading.Lock()
         self._last_tick = 0
         self.max_shape = max_shape
+        self.random = random.Random(seed)
 
         self.debug_console_height = debug_console_height
         self.debug_lines = []
 
         self.window = window  # total screen
         self.window.install_handlers(self)
+        self.set_level(level)
         self.setup_board()
+
+    def set_level(self, level):
+        level_classes = {
+            k: o
+            for k, o in levels.__dict__.items()
+            if isinstance(o, type) and issubclass(o, levels.Level)
+        }
+        try:
+            self.level = eval(level, level_classes)
+            self.debug_lines.append(f"Set level: {level}")
+        except Exception:
+            options = ", ".join(level_classes)
+            self.level = levels.EmptyLevel()
+            self.debug_lines.append(f"Failed to interpret level {level}, make sure it is an option: {options}")
 
     def setup_board(self):
         shape = self.window.shape
@@ -50,6 +70,7 @@ class Application:
                 0 : shape[0], self.debug_console_height : shape[1] - status_height
             ],
         )
+        self.level.apply(self.board)
         self.board.pause()
 
     def set_status(self, msg):

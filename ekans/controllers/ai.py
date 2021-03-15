@@ -1,5 +1,4 @@
 import time
-import random
 import numpy as np
 import json
 
@@ -26,7 +25,7 @@ class RandomAIController(AIController):
     def pick_direction(self, app, options):
         if not options:
             return DIR_MAP[app.board.snake.head.d]
-        return random.choice(options)
+        return app.random.choice(options)
 
     def events(self, app):
         yield " "

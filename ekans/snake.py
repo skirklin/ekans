@@ -1,5 +1,3 @@
-import random
-
 from .drawable import Drawable
 from .segment import Segment
 from .barrier import Barrier
