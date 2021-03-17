@@ -16,7 +16,11 @@ pip install -e .
 ```
 
 ## Play yourself
-ekans play
+```
+ekans play [--level="Random(n)|Bars()|Empty()"]
+```
 
 ## Run bot controller
-ekans ai --name RandomAIController|HungryAIController
+```
+ekans ai --name RandomAIController|HungryAIController [--seed=1234 --level="Random(n)|Bars()|Empty()"]
+```
