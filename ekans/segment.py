@@ -19,11 +19,12 @@ for (p, n), v in list(SEGMENT_CHARS.items()):
 
 
 class Segment(Drawable):
-    def __init__(self, board, x, y, d):
+    def __init__(self, board, x, y, d, attr=0):
         self.board = board
         self.x = x
         self.y = y
         self.d = d
+        self.attr = attr
 
         # fwd means towards lower indices, means towards the head,
         # i.e. the direction of movement.
@@ -48,7 +49,10 @@ class Segment(Drawable):
             char = self.get_char()
         except KeyError:
             char = "?"
-        self.window.insstr(self.x, self.y, char, self)
+        self.window.insstr(self.x, self.y, char, self, self.snake.attr)
+
+    def events(self):
+        return {}
 
     def get_char(self):
         if self.fwd is self.snake.root:

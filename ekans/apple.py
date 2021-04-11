@@ -15,3 +15,6 @@ class Apple(Drawable):
     @property
     def window(self):
         return self.board.window
+
+    def events(self):
+        return {}

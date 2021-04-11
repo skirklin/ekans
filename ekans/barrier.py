@@ -10,3 +10,6 @@ class Barrier(Drawable):
 
     def draw(self):
         self.window.insstr(self.x, self.y, "#", self)
+
+    def events(self):
+        return {}

@@ -24,8 +24,8 @@ class Bars(Level):
         margin = (height - bar_height) // 2
 
         for i in range(margin, height - margin):
-            board.add_barrier(x, i)
-            board.add_barrier(width - x, i)
+            board._add_barrier(x, i)
+            board._add_barrier(width - x, i)
 
 
 class Random(Level):
@@ -42,4 +42,4 @@ class Random(Level):
 
         for _ in range(n):
             loc = board.app.random.choice(np.argwhere(board.window.objects == None))
-            board.add_barrier(*loc)
+            board._add_barrier(*loc)

@@ -9,6 +9,9 @@ class Direction:
         self.dx = dx
         self.dy = dy
 
+    def __repr__(self):
+        return f"<Direction({self.name})>"
+
 UP = Direction("UP", 0, -1)
 DOWN = Direction("DOWN", 0, 1)
 LEFT = Direction("LEFT", -1, 0)

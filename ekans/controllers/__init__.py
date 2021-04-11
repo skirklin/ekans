@@ -1,1 +1,2 @@
-from .ai import RandomAIController, NaiveAIController
+from .interactive import InteractiveController
+from .headless import HeadlessController

@@ -12,10 +12,11 @@ from . import directions
 
 
 class Partition:
-    def __init__(self, board):
+    def __init__(self, snake, board):
+        self.snake = snake
         self.board = board
         self.segmentation = np.zeros(board.window.shape, dtype=int)
-        self.last_turn = board.snake.turn
+        self.last_turn = snake.turn
 
     def compute(self, avoid=None):
         curr_id = 1
@@ -53,7 +54,7 @@ class Partition:
 
     def update(self):
         # to be valid, must be called between _every_
-        snake = self.board.snake
+        snake = self.snake
         if snake.turn == self.last_turn:
             return
         elif snake.turn != self.last_turn + 1:

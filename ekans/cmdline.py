@@ -1,6 +1,7 @@
 import os
 from .app import Application
 from .window import CursesWindow, VirtualWindow
+from .player import HumanPlayer, AIPlayer
 
 def get_max_shape():
     env_shape = os.environ.get("EKANS_SHAPE", "40x40")
@@ -8,10 +9,12 @@ def get_max_shape():
 
 def play(level="Bars()", seed=None):
     with CursesWindow() as window:
-        app = Application(window, max_shape=get_max_shape(), level=level)
-        controller = window.controller(tick_rate=5)
-        controller.run(app)
-        return app
+        app = Application(window, max_shape=get_max_shape())
+        app.board.set_level(level)
+        app.board.add_snake(window.human_player(), app.board.CENTER)
+        app.board.ensure_apples()
+        controller = window.controller()
+        return controller.run(app)
 
 def score(name, level="Bars()", n=30, seed=None):
     from multiprocessing import Pool
@@ -37,7 +40,7 @@ def score(name, level="Bars()", n=30, seed=None):
     print(f"total score: {total_score}")
 
 def ai(name, level="Bars()", headless=False, seed=None):
-    import ekans.controllers.ai
+    import ekans.controllers
 
     if headless:
         window_func = lambda: VirtualWindow(get_max_shape())
@@ -45,9 +48,17 @@ def ai(name, level="Bars()", headless=False, seed=None):
         window_func = lambda: CursesWindow()
 
     with window_func() as window:
-        app = Application(window, max_shape=get_max_shape(), level=level)
+        app = Application(window, max_shape=get_max_shape(), debug_console_height=5)
+        app.board.set_level(level)
 
-        Controller = getattr(ekans.controllers.ai, name)
-        controller = Controller(0, block=not headless)
+        if headless:
+            controller = ekans.controllers.InteractiveController(window)
+        else:
+            controller = ekans.controllers.HeadlessController(window)
+            
+        player = AIPlayer.Get(name)
+        snake = app.board.add_snake(player, app.board.CENTER)
+
         controller.run(app)
-        return {"score": app.board.snake.score, "turns": app.board.snake.turn, "board": str(app.board.window)}
+
+    return {"score": snake.score, "turns": snake.turn, "board": str(app.board.window)}

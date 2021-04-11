@@ -7,9 +7,10 @@ from .directions import LEFT, RIGHT, UP, DOWN, KEY_MAP
 
 
 class Snake(Drawable):
-    def __init__(self, direction, board):
+    def __init__(self, player_factory, direction, board):
         self.direction = direction
         self.board = board
+        self.app = board.app
         self.score = 0
         self.turn = 0
 
@@ -17,17 +18,19 @@ class Snake(Drawable):
         self.root.back = self.root
         self.root.fwd = self.root
         self.length = 0
+        self.attr = board.next_color()
+        self.player = player_factory(self)
 
     @property
     def window(self):
         return self.board.window
 
-    def move(self):
+    def move(self, direction):
         # move tail to in front of head
         tail = self.tail
         self._remove(self.tail)
-        tail.x, tail.y = self.peek()
-        tail.d = self.direction
+        tail.x, tail.y = self.peek(direction)
+        tail.d = direction
         self.insert(0, tail)
 
     def peek(self, direction=None):
@@ -43,25 +46,24 @@ class Snake(Drawable):
             self.direction = direction
         app._last_tick = 0
 
-    def install_handlers(self, app):
-        for key in KEY_MAP:
-            app.add_handler(key, self.set_direction)
+    def events(self):
+        return {
+            key: self.set_direction
+            for key in KEY_MAP
+        }
 
-    def remove_handlers(self, app):
-        for key in KEY_MAP:
-            app.remove_handler(key, self.set_direction)
-
-    def tick(self, app):
-        peek = self.peek()
+    def tick(self):
+        direction = self.player.get_direction()
+        peek = self.peek(direction)
         hit = self.window.get_obj(*peek)
         if isinstance(hit, Apple):
             self.score += 1
-            app.handle(REMOVE_APPLE, {"apple": hit})
-            self.grow_forward(app)
+            self.app.handle(REMOVE_APPLE, {"apple": hit})
+            self.grow_forward(self.app)
         elif isinstance(hit, (Barrier, Segment)):
             self.board.game_over()
         else:
-            self.move()
+            self.move(direction)
         self.turn += 1
 
     def check_dir(self, d):
@@ -79,8 +81,8 @@ class Snake(Drawable):
         return {k: d for k, d in KEY_MAP.items() if self.check_dir(d)}
         
     @classmethod
-    def Make(cls, board, x, y, size=8):
-        s = cls(UP, board)
+    def Make(cls, board, player_factory, x, y, size=8):
+        s = cls(player_factory, UP, board)
         s.append(s.new_segment(x, y, UP))
         for _ in range(size - 1):
             s.grow_backward([DOWN, RIGHT])
@@ -95,6 +97,7 @@ class Snake(Drawable):
     def draw(self):
         for segment in self:
             segment.draw()
+
 
     @property
     def head(self):

@@ -2,11 +2,12 @@ from ekans.snake import Snake
 from ekans.window import VirtualWindow
 from ekans.segment import Segment
 from ekans.directions import UP
-
+from ekans.player import ScriptedPlayer
+from ekans.board import Board
 
 def test_segment_list():
     w = VirtualWindow((20, 20))
-    l = Snake(None, w)
+    l = Snake(ScriptedPlayer.Factory([]), None, Board(None, w))
     assert list(l) == []
 
     s = l.new_segment(0, 0, UP)
